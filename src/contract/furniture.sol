@@ -1,4 +1,4 @@
-  // SPDX-License-Identifier: MIT
+ // SPDX-License-Identifier: MIT
 
 pragma solidity >=0.7.0 <0.9.0;
 
@@ -27,9 +27,13 @@ interface IERC20Token {
     );
 }
 
-contract MarketPlace {
+contract furnitureStore {
+
     uint internal furnituresLength = 0;
-    address internal cUsdTokenAddress =   0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1;
+
+    address internal cUsdTokenAddress = 0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1;
+
+    address public contractOwner;
 
     
 
@@ -44,20 +48,33 @@ contract MarketPlace {
 
     mapping (uint => FurnitureData) internal furnitures;
 
+    //only furniture owner modifier.
+    modifier onlyOwner(uint _index){
+        require(msg.sender == furnitures[_index].owner || msg.sender==contractOwner,"You are not the owner");
+        _;
+    }
 
+
+    //setting the owner on contract deployment
+        constructor(){
+            contractOwner = msg.sender;
+             }
+
+    //function to get the owner of the contract
     function owner() public view returns (address) {
-    return address(this);
+    return contractOwner;
 }
 
-
+    //Get furniture with specific Index
     function getFurniture(uint _index) public view returns (FurnitureData memory) {
         return furnitures[_index];
     }
 
+    //register furniture in the store
     function addFurniture (
-        string memory _image,
-        string memory _description,
-        string memory _edition,
+        string calldata _image,
+        string calldata _description,
+        string calldata _edition,
         uint _size,
         uint _price
     ) public {
@@ -73,7 +90,11 @@ contract MarketPlace {
         furnituresLength++;
     }
 
-    function PurchaseFurniture(uint _index) public payable  {
+
+    //purchase furniture form the store
+    function PurchaseFurniture(uint _index) public payable {
+        require(msg.sender != furnitures[_index].owner,"You cant pay for your oen furniture");
+
         require(
             IERC20Token(cUsdTokenAddress).transferFrom(
                 msg.sender,
@@ -82,27 +103,25 @@ contract MarketPlace {
             ),
             "Transfer failed."
         );
+        furnitures[_index].owner == msg.sender;
     }
 
+    //get number of furniture reistered in the store
     function getfurnitureslength() public view returns (uint) {
         return (furnituresLength);
     }
 
-
-    function deleteFurniture(uint _index) public {
-    require(_index < furnituresLength, "Invalid furniture index.");
-
-    // Only the owner of the furniture or the contract owner can delete a furniture item
-    require(
-        msg.sender == furnitures[_index].owner || msg.sender == owner(),
-        "Unauthorized deletion."
-    );
-
-    //this will Move the last element in the mapping to the deleted index, and delete the last element
-    uint lastIndex = furnituresLength - 1;
-    furnitures[_index] = furnitures[lastIndex];
-    delete furnitures[lastIndex];
-    furnituresLength--;
+    //delete furniture
+    function deleteFurniture(uint _index) public onlyOwner(_index) {
+       delete furnitures[_index];
 }
+
+
+//edit the price of furniture
+function editPrice(uint _index, uint _newPrice) public onlyOwner(_index){
+    furnitures[_index].price == _newPrice;
+}
+
+
 
 }
