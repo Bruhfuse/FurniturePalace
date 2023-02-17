@@ -44,6 +44,10 @@ contract MarketPlace {
 
     mapping (uint => FurnitureData) internal furnitures;
 
+     constructor(address _cUsdTokenAddress) {
+        cUsdTokenAddress = _cUsdTokenAddress;
+    }
+
 
     function owner() public view returns (address) {
     return address(this);
@@ -54,26 +58,37 @@ contract MarketPlace {
         return furnitures[_index];
     }
 
-    function addFurniture (
-        string memory _image,
-        string memory _description,
-        string memory _edition,
-        uint _size,
-        uint _price
-    ) public {
-        FurnitureData memory newFurniture = FurnitureData(
-            payable(msg.sender),
-            _image,
-            _description,
-            _edition,
-            _size,
-            _price
-        );
-        furnitures[furnituresLength] = newFurniture;
-        furnituresLength++;
-    }
+  function addFurniture (
+    string memory _image,
+    string memory _description,
+    string memory _edition,
+    uint _size,
+    uint _price
+) public {
+    require(bytes(_image).length > 0, "Image cannot be empty.");
+    require(bytes(_description).length > 0, "Description cannot be empty.");
+    require(bytes(_edition).length > 0, "Edition cannot be empty.");
+    require(_size > 0, "Size must be greater than 0.");
+    require(_size <= 100, "Size must be less than or equal to 100.");
+    require(_price > 0, "Price must be greater than 0.");
+    require(_price <= 1000000, "Price must be less than or equal to 1,000,000.");
+
+    FurnitureData memory newFurniture = FurnitureData(
+        payable(msg.sender),
+        _image,
+        _description,
+        _edition,
+        _size,
+        _price
+    );
+    furnitures[furnituresLength] = newFurniture;
+    furnituresLength++;
+}
+
 
     function PurchaseFurniture(uint _index) public payable  {
+            require(furnitures[_index].owner != address(0), "Invalid furniture owner address.");
+
         require(
             IERC20Token(cUsdTokenAddress).transferFrom(
                 msg.sender,
@@ -89,7 +104,7 @@ contract MarketPlace {
     }
 
 
-    function deleteFurniture(uint _index) public {
+   function deleteFurniture(uint _index) public {
     require(_index < furnituresLength, "Invalid furniture index.");
 
     // Only the owner of the furniture or the contract owner can delete a furniture item
@@ -98,11 +113,14 @@ contract MarketPlace {
         "Unauthorized deletion."
     );
 
-    //this will Move the last element in the mapping to the deleted index, and delete the last element
+    // Swap the deleted item with the last item in the mapping
     uint lastIndex = furnituresLength - 1;
-    furnitures[_index] = furnitures[lastIndex];
+    if (_index != lastIndex) {
+        furnitures[_index] = furnitures[lastIndex];
+    }
     delete furnitures[lastIndex];
     furnituresLength--;
 }
+
 
 }
