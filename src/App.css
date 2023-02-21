@@ -6,10 +6,11 @@
   border: 1px solid #ccc;
   padding: 10px;
   margin: 10px;
+  margin-top: 20%;
 }
 
 .card-img img {
-  width: 35%;
+  width: 75%;
 }
 
 .card-section {
@@ -29,7 +30,7 @@
   font-size: 16px;
   width: 40%;
   box-sizing: border-box;
-  margin-bottom: 10px;
+  margin-top: 10px;
 }
 
 .btn {
@@ -51,9 +52,12 @@ header {
 }
 
 .navbar-brand {
-  font-size: 1.5rem;
-  font-weight: 600;
+  color: #333; /* Set the text color */
+  font-size: 24px; /* Set the font size */
+  font-weight: bold; /* Set the font weight */
+  text-decoration: none; /* Remove the underline */
 }
+
 
 .navbar-toggler {
   border: none;
@@ -64,7 +68,7 @@ header {
 }
 
 .btn.jed {
-  margin-right: 1rem;
+  margin-left: 80%;
 }
 
 
